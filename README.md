@@ -1,12 +1,16 @@
 # Voice-vim-editor
 
-# Usage
+## Requirements
+* libclang-vim: https://github.com/libclang-vim/libclang-vim
+* vim with python3 package
+
+## Usage
 Type the following command in vim command(line) mode
 ```
 :call VoiceCommand("...")
 ```
 
-# Commands to Implement
+## Commands to Implement
 * **Mode switch command**
   - [x] **Switch to insert mode** [vim command: i]
   ```
