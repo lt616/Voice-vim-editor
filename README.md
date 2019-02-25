@@ -6,7 +6,7 @@ Type the following command in vim command(line) mode
 :call VoiceCommand("...")
 ```
 
-## Commands to Implement
+# Commands to Implement
 * **Mode switch command**
   - [x] **Switch to insert mode** [vim command: i]
   ```
