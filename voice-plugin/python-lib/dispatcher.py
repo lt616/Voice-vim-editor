@@ -30,6 +30,8 @@ def voice_command(command, mode):
 		mode, res_str = edit.delete_dispatch(commands[1], mode)
 
 	# move cursor
+	elif commands[0].lower() == "move" and len(commands) > 1:
+		mode, res_str = move.dispatch(commands[1], mode)
 
 	return mode, res_str
 
