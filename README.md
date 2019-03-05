@@ -5,7 +5,7 @@
 * vim with python3 package
 
 ## Usage
-Type the following command in vim command(line) mode
+Type the following command in vim command(line) mode. Commands are non-case-sensitive
 ```
 :call VoiceCommand("...")
 ```
@@ -45,7 +45,21 @@ Type the following command in vim command(line) mode
       VoiceCommand("move n [char/word/line] [forward/right/down/backward/left/up]
       ```
   
-  - [ ] **Search text** [vim command: \\]
+  - [x] **Search text** [vim command: \ / next / *]
+    Unimplement: Highlight for search result.
+    - Search word the cursor currently on
+      ```
+      VoiceCommand("search current word")
+      ```
+    - Search [text]
+      ```
+      VoiceCommand("search [text]")
+      ```
+    - Show next search result
+      ```
+      VoiceCommand("next")
+      ```
+    
   
 * **Node level commands**
   - [ ] **Select current node** (the smallest node cursor current in)
