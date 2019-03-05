@@ -35,7 +35,15 @@ Type the following command in vim command(line) mode
     ```
     VoiceCommand("delete n [char/word/line] [forward/backward]")
     ```
-  - [ ] **Move cursor** [vim command: hjkl]
+  - [x] **Move cursor** [vim command: <count> gg / hjkl]
+    - Move cursor to certain line
+      ``` 
+      VoiceCommand("move line n")
+      ```
+    - Move cursor in unit of char, word or line. 
+      ```
+      VoiceCommand("move n [char/word/line] [forward/right/down/backward/left/up]
+      ```
   
   - [ ] **Search text** [vim command: \\]
   
