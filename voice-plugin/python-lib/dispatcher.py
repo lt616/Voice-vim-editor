@@ -2,6 +2,8 @@ import sys
 import switch
 import edit
 import move
+import search
+import clear
 # from importlib import reload
 # reload(switch)
 # reload(switch)
@@ -18,6 +20,8 @@ def voice_command(command, mode):
 
 	commands = command.split(" ", 1)
 	
+	# return msg need to be changed
+
 	# switch mode
 	if commands[0].lower() == "switch" and len(commands) > 1:
 		mode, res_str = switch.dispatch(commands[1], mode)
@@ -33,6 +37,18 @@ def voice_command(command, mode):
 	# move cursor
 	elif commands[0].lower() == "move" and len(commands) > 1:
 		mode, res_str = move.dispatch(commands[1], mode)
+
+	# search text
+	elif commands[0].lower() == "search" and len(commands) > 1:
+		mode, res_str = search.dispatch(commands[1], mode)
+
+	# show next search result
+	elif command.lower() == "next":
+		mode, res_str = search.next(mode)
+
+	# clear search result
+	# elif commands[0].lower() == "clear":
+		# mode, res_str = clear.dispatch(mode)
 
 	return mode, res_str
 
