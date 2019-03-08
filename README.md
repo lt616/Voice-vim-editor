@@ -42,7 +42,7 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
       ```
     - Move cursor in unit of char, word or line. 
       ```
-      VoiceCommand("move n [char/word/line] [forward/right/down/backward/left/up]
+      VoiceCommand("move n [char/word/line] [forward/right/down/backward/left/up]")
       ```
   
   - [x] **Search text** [vim command: \ / next / *]
