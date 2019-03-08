@@ -12,7 +12,7 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
 
 ## Commands to Implement
 * **Mode switch command**
-  - [x] **Switch to insert mode** [vim command: i]
+  - [x] **Switch to insert mode** [vim command: i] user can type by keyboard in insert mode.
   ```
   VoiceCommand("switch insert")
   ```
