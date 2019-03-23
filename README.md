@@ -68,6 +68,8 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
   
   - [ ] **Select child node of current node**
   
+  - [ ] **Select next sibling of current node**
+  
   - [ ] **Search a node**
   
   - [ ] **Add text** ??????
