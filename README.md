@@ -62,7 +62,11 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
     
   
 * **Node level commands**
-  - [ ] **Select current node** (the smallest node cursor current in)
+  - [x] **Select current node** (the most inner node the cursor currently at)
+    ```
+    VoiceCommand("select current node")
+    ```
+    If there is no node at current cursor position, it will warning error. Otherwise highlight the most inner node in visual mode.
   
   - [ ] **Select parent node of current node**
   
