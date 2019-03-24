@@ -2,7 +2,7 @@ let g:mode = "n"
 
 " Vim Function for selecting a node in virtual mode
 " Argument 00: node_pos fake json
-function! VirtualSelect(node_pos)
+function! VisualSelect(node_pos)
 python3 << EOF
 import sys
 from importlib import reload
@@ -35,7 +35,7 @@ if a:command =~ "select current node"
 		return
 	endif
 
-	let result = VirtualSelect(node_pos)
+	let result = VisualSelect(node_pos)
 	return
 endif
 
