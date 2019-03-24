@@ -12,7 +12,7 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
 
 ## Commands to Implement
 * **Mode switch command**
-  - [x] **Switch to insert mode** [vim command: i]
+  - [x] **Switch to insert mode** [vim command: i] user can type by keyboard in insert mode.
   ```
   VoiceCommand("switch insert")
   ```
@@ -42,7 +42,7 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
       ```
     - Move cursor in unit of char, word or line. 
       ```
-      VoiceCommand("move n [char/word/line] [forward/right/down/backward/left/up]
+      VoiceCommand("move n [char/word/line] [forward/right/down/backward/left/up]")
       ```
   
   - [x] **Search text** [vim command: \ / next / *]
@@ -67,6 +67,8 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
   - [ ] **Select parent node of current node**
   
   - [ ] **Select child node of current node**
+  
+  - [ ] **Select next sibling of current node**
   
   - [ ] **Search a node**
   
