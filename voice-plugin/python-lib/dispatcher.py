@@ -1,9 +1,13 @@
 import sys
+import json
 import switch
 import edit
 import move
 import search
 import clear
+import node
+
+from pprint import pprint
 # from importlib import reload
 # reload(switch)
 # reload(switch)
@@ -19,6 +23,8 @@ def voice_command(command, mode):
 	res_str = print_error("Command " + command + " not recognized.")
 
 	commands = command.split(" ", 1)
+
+
 	
 	# return msg need to be changed
 
@@ -51,6 +57,17 @@ def voice_command(command, mode):
 		# mode, res_str = clear.dispatch(mode)
 
 	return mode, res_str
+
+def node_dispatcher(node_pos_raw):
+	return node.node_select(node_pos_raw)
+
+def handle_json(text):
+	text = text.replace('"', "000\"")
+	text = text.replace("'", '"')
+	text = text.replace("000\"", "'")
+
+	return json.loads(text)
+
 
 # print(voice_command("switch mode"))
 # print(voice_command("add text printf", "n"))

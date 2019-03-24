@@ -26,8 +26,12 @@ class ASTNode:
 		self.children.append(child)
 
 	def set_end_pos(self, next):
-		self.endline = next["line"]
-		self.column = next["column"]
+		if next is None:
+			self.offset = -1
+		else:
+			self.offset = next.offset - 1
+		# self.endline = next["line"]
+		# self.column = next["column"]
 	
 	def get_full_pos(self):
 		pass

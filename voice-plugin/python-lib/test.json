@@ -1,0 +1,18 @@
+{"root": [{"type_kind": "FunctionProto", "line": 3, "type": "int ()", "file": "hello_libc
+lang.cpp", "linkage": "External", "spell": "main", "is_definition": 1, "parent": "hello_l
+ibclang.cpp", "kind": "FunctionDecl", "kind_type": "Declaration", "lexical_parent": "hell
+o_libclang.cpp", "children": [{"file": "hello_libclang.cpp", "parent": "main", "kind_type
+": "Statement", "children": [{"file": "hello_libclang.cpp", "kind_type": "Statement", "ch
+ildren": [{"is_POD_type": 1, "line": 5, "type": "int", "offset": 42, "file": "hello_libcl
+ang.cpp", "linkage": "Nolinkage", "spell": "i", "is_definition": 1, "kind": "VarDecl", "k
+ind_type": "Declaration", "lexical_parent": "main", "children": [{"file": "hello_libclang
+.cpp", "kind_type": "Expression", "parent": "i", "is_POD_type": 1, "children": [], "colum
+n": 13, "offset": 46, "line": 5, "semantic_parent": "i", "type": "int", "type_kind": "Int
+", "kind": "IntegerLiteral"}], "column": 9, "type_kind": "Int", "semantic_parent": "main"
+}], "column": 5, "offset": 38, "line": 5, "kind": "DeclStmt", "type_kind": "Invalid"}, {"
+file": "hello_libclang.cpp", "kind_type": "Statement", "children": [{"file": "hello_libcl
+ang.cpp", "kind_type": "Expression", "is_POD_type": 1, "children": [], "column": 12, "off
+set": 65, "line": 7, "type": "int", "type_kind": "Int", "kind": "IntegerLiteral"}], "colu
+mn": 5, "offset": 58, "line": 7, "kind": "ReturnStmt", "type_kind": "Invalid"}], "column"
+: 1, "offset": 32, "line": 4, "semantic_parent": "main", "kind": "CompoundStmt", "type_ki
+nd": "Invalid"}], "column": 5, "offset": 25, "semantic_parent": "hello_libclang.cpp"}]}
