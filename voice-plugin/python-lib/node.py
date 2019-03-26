@@ -61,11 +61,11 @@ class SearchSpace():
 				else:
 					self.res_line_end = int(next_parent_pos["line"])
 					self.res_col_end = int(next_parent_pos["column"])
-					self.offset_end = int(next_parent_pos["offset"])
+					self.offset_end = int(next_parent_pos["offset"]) - 1
 			else:
 				self.res_line_end = int(next_node_pos["line"])
 				self.res_col_end = int(next_node_pos["column"])
-				self.offset_end = int(next_node_pos["offset"])
+				self.offset_end = int(next_node_pos["offset"]) - 1
 		else:
 			self.res_line_end = int(node_pos["children"][1]["line"])
 			self.res_col_end = int(node_pos["children"][1]["column"])
@@ -93,17 +93,14 @@ class SearchSpace():
 				else:
 					self.res_line_end = int(next_node_pos["line"])
 					self.res_col_end = int(next_node_pos["column"])
-					self.offset_end = int(next_node_pos["offset"])
+					self.offset_end = int(next_node_pos["offset"]) - 1
 			else:
 				self.res_line_end = int(nodes[index + 1]["line"])
 				self.res_col_end = int(nodes[index + 1]["column"])
-				self.offset_end = int(nodes[index + 1]["offset"])
-
-
+				self.offset_end = int(nodes[index + 1]["offset"]) - 1
 
 
 	def parent_search(self, node_pos, next_node_pos):
-
 		for i in range(len(node_pos["children"])):
 			if int(node_pos["children"][i]["offset"]) > self.cursor_start:
 				self.parent_search(node_pos["children"][i - 1], node_pos["children"][i])
@@ -151,7 +148,6 @@ class SearchSpace():
 				pass
 
 	def next_sibling_search(self, node_pos, next_node_pos):
-		print(node_pos)
 		for i in range(len(node_pos["children"])):
 			if int(node_pos["children"][i]["offset"]) > self.cursor_start:
 				self.next_sibling_search(node_pos["children"][i - 1], node_pos["children"][i])
