@@ -74,7 +74,7 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
     ```
     If there is no node selected, shows error message. Otherwise select parent of current selected node. 
   
-  - [ ] **Select child node of current node**
+  - [ ] **Select first child node of current node**
   
   - [ ] **Select next sibling of current node**
   
