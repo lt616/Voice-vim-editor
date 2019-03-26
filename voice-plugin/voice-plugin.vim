@@ -93,6 +93,25 @@ if a:command =~ "select child node"
 	return
 endif
 
+if a:command =~ "select next sibling node"
+	" if no node selected
+	if g:cursor_start == -1 && g:cursor_end == -1
+		echom "Error: No node selected. Cannot find next sibling node"
+		return
+	endif
+
+	" get file name
+	let file_name = expand('%:t:r')
+	let ext_name = expand('%:e')
+	let file = file_name . "." . ext_name
+
+	" get entire AST
+	let ast = libclang#AST#non_system_headers#all(file)
+
+	let temp_pos = VisualSelect("next sibling", ast)
+	return
+endif
+
 
 python3 << EOF
 import sys

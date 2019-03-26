@@ -71,6 +71,37 @@ class SearchSpace():
 			self.res_col_end = int(node_pos["children"][1]["column"])
 			self.offset_end = int(node_pos["children"][1]["offset"]) - 1
 
+	def set_next_sibling_result(self, nodes, index, next_node_pos):
+		if index >= len(nodes):
+			self.res_line_start = -1
+			self.res_col_start = -1
+			self.offset_start = -1
+
+			self.res_line_end = -1
+			self.res_col_end = -1
+			self.offset_end = -1
+		else:
+			self.res_line_start = int(nodes[index]["line"])
+			self.res_col_start = int(nodes[index]["column"])
+			self.offset_start = int(nodes[index]["offset"])
+
+			if index + 1 >= len(nodes):
+				if next_node_pos is None:
+					self.res_line_end = -1
+					self.res_col_end = -1
+					self.offset_end = -1
+				else:
+					self.res_line_end = int(next_node_pos["line"])
+					self.res_col_end = int(next_node_pos["column"])
+					self.offset_end = int(next_node_pos["offset"])
+			else:
+				self.res_line_end = int(nodes[index + 1]["line"])
+				self.res_col_end = int(nodes[index + 1]["column"])
+				self.offset_end = int(nodes[index + 1]["offset"])
+
+
+
+
 	def parent_search(self, node_pos, next_node_pos):
 
 		for i in range(len(node_pos["children"])):
@@ -119,6 +150,25 @@ class SearchSpace():
 			else:
 				pass
 
+	def next_sibling_search(self, node_pos, next_node_pos):
+		print(node_pos)
+		for i in range(len(node_pos["children"])):
+			if int(node_pos["children"][i]["offset"]) > self.cursor_start:
+				self.next_sibling_search(node_pos["children"][i - 1], node_pos["children"][i])
+				break;
+			elif int(node_pos["children"][i]["offset"]) == self.cursor_start:
+				if i == len(node_pos["children"]) - 1 or self.cursor_end == -1:
+					self.set_next_sibling_result(node_pos["children"], i + 1, next_node_pos)
+					self.next_sibling_search(node_pos["children"][i], None)
+				elif self.cursor_end <= int(node_pos["children"][i + 1]["offset"]):
+					self.set_next_sibling_result(node_pos["children"], i + 1, next_node_pos)
+					self.next_sibling_search(node_pos["children"][i], node_pos["children"][i + 1])
+				break;
+			elif i == len(node_pos["children"]) - 1:
+				self.next_sibling_search(node_pos["children"][i], None)
+			else:
+				pass
+
 
 
 # virtual select
@@ -161,6 +211,18 @@ def child_select(node_pos, cursor_start, cursor_end):
 	return search_space.offset_start, search_space.offset_end, search_space.visual_select()
 
 
+def next_sibling_select(node_pos, cursor_start, cursor_end):
+	root = {}
+	root["children"] = node_pos
+
+	search_space = SearchSpace(int(cursor_start), int(cursor_end))
+	search_space.next_sibling_search(root, None)
+	print(search_space.visual_select())
+	print(search_space.offset_start)
+	print(search_space.offset_end)
+	return search_space.offset_start, search_space.offset_end, search_space.visual_select()
+
+
 def tree_construct(data, parent, next_node, next_uncle):
 	cur_node = ASTNode(data)
 	cur_node.set_parent(parent)
@@ -188,7 +250,7 @@ def init_tree():
 with open("hello_output.txt") as data_file:
 	data = json.load(data_file)
 
-	child_select(data["root"], 133, 296)
+	next_sibling_select(data["root"], 142, 144)
 
 
 
