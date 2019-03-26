@@ -71,6 +71,9 @@ def node_dispatcher(command, node_pos, cursor_start, cursor_end):
 	elif command == "next sibling":
 		return node.next_sibling_select(node_pos["root"], cursor_start, cursor_end)
 
+	elif command == "previous sibling":
+		return node.prev_sibling_select(node_pos["root"], cursor_start, cursor_end)
+
 	else:
 		print_error("Invalid node command.")
 
