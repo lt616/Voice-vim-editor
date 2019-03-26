@@ -94,8 +94,6 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
   
   - [ ] **Search a node**
   
-  - [ ] **Add text** ??????
-  
   - [ ] **Delete node**
   
    
