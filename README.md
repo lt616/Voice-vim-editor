@@ -80,8 +80,11 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
     ```
     If there is no node selected or no child node, shows error message. Otherwise select the first child of current selected node in visual mode.
   
-  - [ ] **Select previous sibling of current node**
-
+  - [x] **Select previous sibling of current node**
+    ```
+    VoiceCommand("select previous sibling node")
+    ```
+    If there is no node selected or no previous sibling node, shows error message. Otherwise select the first child of current selected node in visual mode.
   
   - [x] **Select next sibling of current node**
     ```
