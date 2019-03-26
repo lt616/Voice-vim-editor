@@ -68,7 +68,11 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
     ```
     If there is no node at current cursor position, it will warning error. Otherwise highlight the most inner node in visual mode.
   
-  - [ ] **Select parent node of current node**
+  - [x] **Select parent node of current node**
+    ```
+    VoiceCommand("select parent node")
+    ```
+    If there is no node selected, shows error message. Otherwise select parent of current selected node. 
   
   - [ ] **Select child node of current node**
   
