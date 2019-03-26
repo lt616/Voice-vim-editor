@@ -1,8 +1,11 @@
 let g:mode = "n"
+let g:cursor_start = -1
+let g:cursor_end = -1
 
 " Vim Function for selecting a node in virtual mode
 " Argument 00: node_pos fake json
-function! VisualSelect(node_pos)
+
+function! VisualSelect(opt, node_pos)
 python3 << EOF
 import sys
 from importlib import reload
@@ -10,8 +13,18 @@ sys.path.append('./python-lib')
 import dispatcher
 import vim
 
-res = dispatcher.node_dispatcher(vim.eval("a:node_pos"))
+print(vim.eval("g:cursor_start"))
+print(vim.eval("g:cursor_end"))
 
+start_pos, end_pos, res = dispatcher.node_dispatcher(vim.eval("a:opt"), vim.eval("a:node_pos"), vim.eval("g:cursor_start"), vim.eval("g:cursor_end"))
+
+print("str " + str(start_pos) + " " + str(end_pos))
+
+if (not start_pos == -1) and end_pos == -1:
+	end_pos = vim.command("execute 'w !wc -m'")
+
+vim.command("let g:cursor_start = %s"% start_pos)
+vim.command("let g:cursor_end = %s"% end_pos)
 vim.command(res)
 EOF
 endfunction
@@ -35,7 +48,33 @@ if a:command =~ "select current node"
 		return
 	endif
 
-	let result = VisualSelect(node_pos)
+	let temp_pos = VisualSelect("current", node_pos)
+	echom g:cursor_start
+	echom g:cursor_end
+	return
+endif
+
+
+if a:command =~ "select parent node"
+	" if no node selected
+	if g:cursor_start == -1 || g:cursor_end == -1
+		echom "Error: No node selected. Cannot find parent node"
+		return
+	endif
+
+	" get parent cursor position
+	let file_name = expand('%:t:r')
+	let ext_name = expand('%:e')
+	let line_pos = line(".")
+	let col_pos = virtcol('.')
+	let file = file_name . "." . ext_name
+
+	let value = system("cat " . file . " | wc -m")
+
+	" get entire AST
+	let ast = libclang#AST#non_system_headers#all(file)
+	
+	let temp_pos = VisualSelect("parent", ast)
 	return
 endif
 
@@ -60,7 +99,9 @@ if mode == "n":
 else:
 	vim.command("let g:mode = \"i\"")
 
-#print(res)
+# clear cursor positions
+vim.command("let g:cursor_start = -1")
+vim.command("let g:cursor_end = -1")
 vim.command(res)
 
 EOF
@@ -90,13 +131,18 @@ sys.path.append('./python-lib')
 import vim
 import dispatcher
 
-res = dispatcher.test()
-vim.command("echom " + res);
+#end_pos = vim.command("execute 'w !wc -m'")
+#print(end_pos)
 #vim.command("echom libclang#version()")
 EOF
+
+let value = system("wc -m")
+echom value
+
 endfunction
 
 function! Test(command)
-let ast = libclang#AST#non_system_headers#all('hello_libclang.cpp')
-echom ast
+vim.command("w !wc -m")
+"let ast = libclang#AST#non_system_headers#all('hello_libclang.cpp')
+"echom ast
 endfunction

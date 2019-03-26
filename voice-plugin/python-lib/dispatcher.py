@@ -58,8 +58,15 @@ def voice_command(command, mode):
 
 	return mode, res_str
 
-def node_dispatcher(node_pos_raw):
-	return node.node_select(node_pos_raw)
+def node_dispatcher(command, node_pos, cursor_start, cursor_end):
+	if command == "current":
+		return node_pos["start"]["offset"], node_pos["end"]["offset"], node.node_select(node_pos)
+
+	elif command == "parent":
+		return node.parent_select(node_pos["root"], cursor_start, cursor_end)
+
+	else:
+		print_error("Invalid node command.")
 
 def handle_json(text):
 	text = text.replace('"', "000\"")
