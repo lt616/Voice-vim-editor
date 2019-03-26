@@ -72,17 +72,22 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
     ```
     VoiceCommand("select parent node")
     ```
-    If there is no node selected, shows error message. Otherwise select parent of current selected node in visual mode. 
+    If there is no node selected or no parent node, shows error message. Otherwise select parent of current selected node in visual mode. 
   
   - [x] **Select first child node of current node**
     ```
     VoiceCommand("select child node")
     ```
-    If there is no node selected, shows error message. Otherwise select the first child of current selected node in visual mode.
+    If there is no node selected or no child node, shows error message. Otherwise select the first child of current selected node in visual mode.
   
-  - [ ] **Select previous sibling of current node**
+  - [] **Select previous sibling of current node**
+
   
-  - [ ] **Select next sibling of current node**
+  - [x] **Select next sibling of current node**
+    ```
+    VoiceCommand("select next sibling node")
+    ```
+    If there is no node selected or no next sibling, shows error message. Otherwise select the next sibling node in visual mode.
   
   - [ ] **Search a node**
   
