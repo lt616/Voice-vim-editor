@@ -20,8 +20,7 @@ start_pos, end_pos, res = dispatcher.node_dispatcher(vim.eval("a:opt"), vim.eval
 
 print("str " + str(start_pos) + " " + str(end_pos))
 
-if (not start_pos == -1) and end_pos == -1:
-	end_pos = vim.command("execute 'w !wc -m'")
+print(res)
 
 vim.command("let g:cursor_start = %s"% start_pos)
 vim.command("let g:cursor_end = %s"% end_pos)
@@ -57,19 +56,15 @@ endif
 
 if a:command =~ "select parent node"
 	" if no node selected
-	if g:cursor_start == -1 || g:cursor_end == -1
+	if g:cursor_start == -1 && g:cursor_end == -1
 		echom "Error: No node selected. Cannot find parent node"
 		return
 	endif
 
-	" get parent cursor position
+	" get  file name
 	let file_name = expand('%:t:r')
 	let ext_name = expand('%:e')
-	let line_pos = line(".")
-	let col_pos = virtcol('.')
 	let file = file_name . "." . ext_name
-
-	let value = system("cat " . file . " | wc -m")
 
 	" get entire AST
 	let ast = libclang#AST#non_system_headers#all(file)
@@ -77,6 +72,27 @@ if a:command =~ "select parent node"
 	let temp_pos = VisualSelect("parent", ast)
 	return
 endif
+
+
+if a:command =~ "select child node"
+	" if no node selected
+	if g:cursor_start == -1 && g:cursor_end == -1
+		echom "Error: No node selected. Cannot find child node"
+		return
+	endif
+
+	" get file name
+	let file_name = expand('%:t:r')
+	let ext_name = expand('%:e')
+	let file = file_name . "." . ext_name
+
+	" get entire AST
+	let ast = libclang#AST#non_system_headers#all(file)
+
+	let temp_pos = VisualSelect("child", ast)
+	return
+endif
+
 
 python3 << EOF
 import sys

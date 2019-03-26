@@ -65,6 +65,9 @@ def node_dispatcher(command, node_pos, cursor_start, cursor_end):
 	elif command == "parent":
 		return node.parent_select(node_pos["root"], cursor_start, cursor_end)
 
+	elif command == "child":
+		return node.child_select(node_pos["root"], cursor_start, cursor_end)
+
 	else:
 		print_error("Invalid node command.")
 
