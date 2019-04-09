@@ -38,7 +38,6 @@ class SearchSpace():
 			self.res_line_end = -1
 			self.res_col_end = -1
 			self.offset_end = self.cursor_end
-
 			return
 
 		self.res_line_start = node_pos["start"]["line"]
@@ -48,51 +47,6 @@ class SearchSpace():
 		self.res_line_end = node_pos["end"]["line"]
 		self.res_col_end = node_pos["end"]["column"]
 		self.offset_end = node_pos["end"]["offset"]
-
-
-	def set_parent_result(self, node_pos, next_node_pos):
-		self.res_line_start = int(node_pos["line"])
-		self.res_col_start = int(node_pos["column"])
-		self.offset_start = int(node_pos["offset"])
-
-		if next_node_pos is None:
-			self.res_line_end = -1
-			self.res_col_end = -1
-			self.offset_end = -1
-
-		else:
-			self.res_line_end = int(next_node_pos["line"])
-			self.res_col_end = int(next_node_pos["column"])
-			self.offset_end = int(next_node_pos["offset"]) - 1
-
-	def set_child_result(self, node_pos, next_node_pos, next_parent_pos):
-		if len(node_pos["children"]) == 0:
-			self.res_line_start = -1
-			self.res_col_start = -1
-			self.offset_start = -1
-		else:
-			self.res_line_start = int(node_pos["children"][0]["line"])
-			self.res_col_start = int(node_pos["children"][0]["column"])
-			self.offset_start = int(node_pos["children"][0]["offset"])
-
-		if len(node_pos["children"]) < 2:
-			if next_node_pos is None:
-				if next_parent_pos is None:
-					self.res_line_end = -1
-					self.res_col_end = -1
-					self.offset_end = -1
-				else:
-					self.res_line_end = int(next_parent_pos["line"])
-					self.res_col_end = int(next_parent_pos["column"])
-					self.offset_end = int(next_parent_pos["offset"]) - 1
-			else:
-				self.res_line_end = int(next_node_pos["line"])
-				self.res_col_end = int(next_node_pos["column"])
-				self.offset_end = int(next_node_pos["offset"]) - 1
-		else:
-			self.res_line_end = int(node_pos["children"][1]["line"])
-			self.res_col_end = int(node_pos["children"][1]["column"])
-			self.offset_end = int(node_pos["children"][1]["offset"]) - 1
 
 	def set_next_sibling_result(self, nodes, index, next_node_pos):
 		if index >= len(nodes):
@@ -177,41 +131,46 @@ class SearchSpace():
 			self.child_search(child)
 			return
 
-	def next_sibling_search(self, node_pos, next_node_pos):
-		for i in range(len(node_pos["children"])):
-			if int(node_pos["children"][i]["offset"]) > self.cursor_start:
-				self.next_sibling_search(node_pos["children"][i - 1], node_pos["children"][i])
-				break;
-			elif int(node_pos["children"][i]["offset"]) == self.cursor_start:
-				if i == len(node_pos["children"]) - 1 or self.cursor_end == -1:
-					self.set_next_sibling_result(node_pos["children"], i + 1, next_node_pos)
-					self.next_sibling_search(node_pos["children"][i], None)
-				elif self.cursor_end <= int(node_pos["children"][i + 1]["offset"]):
-					self.set_next_sibling_result(node_pos["children"], i + 1, next_node_pos)
-					self.next_sibling_search(node_pos["children"][i], node_pos["children"][i + 1])
-				break;
-			elif i == len(node_pos["children"]) - 1:
-				self.next_sibling_search(node_pos["children"][i], None)
-			else:
-				pass
+	def next_sibling_search(self, node_pos):
+		children = node_pos["children"]
+		for i in range(len(children)): 
+			if int(children[i]["start"]["offset"]) == self.cursor_start and int(children[i]["end"]["offset"]) == self.cursor_end:
+				if i == len(children) - 1:
+					self.set_result(None)
+				else:
+					self.set_result(children[i + 1])
+				return
+			
+			if int(children[i]["start"]["offset"]) > self.cursor_end:
+				self.set_result(None)
+				return
+
+			if int(children[i]["end"]["offset"]) < self.cursor_start:
+				continue;
+
+			self.next_sibling_search(children[i])
+			return
+
 
 	def prev_sibling_search(self, node_pos):
-		for i in range(len(node_pos["children"])):
-			if int(node_pos["children"][i]["offset"]) > self.cursor_start:
-				self.prev_sibling_search(node_pos["children"][i - 1])
-				break;
-			elif int(node_pos["children"][i]["offset"]) == self.cursor_start:
-				if i == len(node_pos["children"]) - 1 or self.cursor_end == -1:
-					self.set_prev_sibling_result(node_pos["children"], i)
-					self.prev_sibling_search(node_pos["children"][i])
-				elif self.cursor_end <= int(node_pos["children"][i + 1]["offset"]):
-					self.set_prev_sibling_result(node_pos["children"], i)
-					self.prev_sibling_search(node_pos["children"][i])
-				break;
-			elif i == len(node_pos["children"]) - 1:
-				self.prev_sibling_search(node_pos["children"][i])
-			else:
-				pass
+		children = node_pos["children"]
+		for i in range(len(children)): 
+			if int(children[i]["start"]["offset"]) == self.cursor_start and int(children[i]["end"]["offset"]) == self.cursor_end:
+				if i == 0:
+					self.set_result(None)
+				else:
+					self.set_result(children[i - 1])
+				return
+			
+			if int(children[i]["start"]["offset"]) > self.cursor_end:
+				self.set_result(None)
+				return
+
+			if int(children[i]["end"]["offset"]) < self.cursor_start:
+				continue;
+
+			self.prev_sibling_search(children[i])
+			return
 
 
 
@@ -259,8 +218,8 @@ def next_sibling_select(node_pos, cursor_start, cursor_end):
 	root = {}
 	root["children"] = node_pos
 
-	search_space = SearchSpace(int(cursor_start), int(cursor_end))
-	search_space.next_sibling_search(root, None)
+	search_space = SearchSpace(int(cursor_start), int(cursor_end), "No next sibling.")
+	search_space.next_sibling_search(root)
 	# print(search_space.visual_select())
 	# print(search_space.offset_start)
 	# print(search_space.offset_end)
@@ -271,7 +230,7 @@ def prev_sibling_select(node_pos, cursor_start, cursor_end):
 	root = {}
 	root["children"] = node_pos
 
-	search_space = SearchSpace(int(cursor_start), int(cursor_end))
+	search_space = SearchSpace(int(cursor_start), int(cursor_end), "No previous sibling")
 	search_space.prev_sibling_search(root)
 	# print(search_space.visual_select())
 	# print(search_space.offset_start)
@@ -306,7 +265,7 @@ def init_tree():
 # with open("hello.txt") as data_file:
 # 	data = json.load(data_file)
 
-# 	print(child_select(data["root"], 144, 149))
+# 	print(prev_sibling_select(data["root"], 138, 143))
 
 
 
