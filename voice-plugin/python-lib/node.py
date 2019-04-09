@@ -6,7 +6,7 @@ from pprint import pprint
 
 class SearchSpace():
 
-	def __init__(self, cursor_start, cursor_end):
+	def __init__(self, cursor_start, cursor_end, err_msg):
 		self.res_line_start = -1
 		self.res_col_start = -1
 		self.res_line_end = -1
@@ -17,15 +17,38 @@ class SearchSpace():
 		self.cursor_start = cursor_start
 		self.cursor_end = cursor_end
 
-	def visual_select(self):
+		self.err_msg = err_msg
+
+	def visual_select(self, err_str):
 		if self.res_line_start == -1 and self.res_col_end == -1:
-			exception.print_error("No parent node.")
-			return None
+			# exception.print_error(err_str)
+			return "echo \"" + "Error: " + self.err_msg + "\""
 
 		if self.res_line_end == -1 or self.res_col_end == -1:
 			return "normal! " + str(self.res_line_start) + "G " + str(self.res_col_start) + "| 2h v " + "G$"
 		else:
 			return "normal! " + str(self.res_line_start) + "G " + str(self.res_col_start) + "| 2h v " + str(self.res_line_end) + "G " + str(self.res_col_end) + "|" 
+
+	def set_result(self, node_pos):
+		if node_pos is None:
+			self.res_line_start = -1
+			self.res_col_start = -1
+			self.offset_start = self.cursor_start
+
+			self.res_line_end = -1
+			self.res_col_end = -1
+			self.offset_end = self.cursor_end
+
+			return
+
+		self.res_line_start = node_pos["start"]["line"]
+		self.res_col_start = node_pos["start"]["column"]
+		self.offset_start = node_pos["start"]["offset"]
+
+		self.res_line_end = node_pos["end"]["line"]
+		self.res_col_end = node_pos["end"]["column"]
+		self.offset_end = node_pos["end"]["offset"]
+
 
 	def set_parent_result(self, node_pos, next_node_pos):
 		self.res_line_start = int(node_pos["line"])
@@ -118,28 +141,22 @@ class SearchSpace():
 			self.res_col_end = int(nodes[index]["column"])
 			self.offset_end = int(nodes[index]["offset"]) - 1
 
-	def parent_search(self, node_pos, next_node_pos):
-		for i in range(len(node_pos["children"])):
-			if int(node_pos["children"][i]["offset"]) > self.cursor_start:
-				self.parent_search(node_pos["children"][i - 1], node_pos["children"][i])
-				break;
-			elif int(node_pos["children"][i]["offset"]) == self.cursor_start:
-				if i == len(node_pos["children"]) - 1 or self.cursor_end == -1:
-					# MAYBE BUG: multiple functions
-					self.set_parent_result(node_pos, next_node_pos)
+	def parent_search(self, node_pos):
+		for child in node_pos["children"]: 
+			if int(child["start"]["offset"]) == self.cursor_start and int(child["end"]["offset"]) == self.cursor_end:
+				self.set_result(node_pos)
+				return
+			
+			if int(child["start"]["offset"]) > self.cursor_end:
+				self.set_result(None)
+				return
 
-					self.parent_search(node_pos["children"][i], None)
-				elif self.cursor_end <= int(node_pos["children"][i + 1]["offset"]):
-					# set search result
-					# MAYBE BUG: when cursor_end is -1
-					self.set_parent_result(node_pos, next_node_pos)
+			if int(child["end"]["offset"]) < self.cursor_start:
+				continue;
 
-					self.parent_search(node_pos["children"][i], node_pos["children"][i + 1])
-				break;
-			elif i == len(node_pos["children"]) - 1:
-				self.parent_search(node_pos["children"][i], None)
-			else:
-				pass
+			self.parent_search(child)
+			return
+
 
 	def child_search(self, node_pos, next_node_pos):
 
@@ -220,15 +237,16 @@ def node_select(node_pos):
 
 def parent_select(node_pos, cursor_start, cursor_end):
 
-	root = node_pos[0]
+	root = {}
+	root["children"] = node_pos
 
-	search_space = SearchSpace(int(cursor_start), int(cursor_end))
+	search_space = SearchSpace(int(cursor_start), int(cursor_end), "No parent.")
 
-	search_space.parent_search(root, None)
+	search_space.parent_search(root)
 	# print(search_space.visual_select())
 	# print(search_space.offset_start)
 	# print(search_space.offset_end)
-	return search_space.offset_start, search_space.offset_end, search_space.visual_select()
+	return search_space.offset_start, search_space.offset_end, search_space.visual_select("Error: No parent node.")
 
 
 def child_select(node_pos, cursor_start, cursor_end):
@@ -237,10 +255,10 @@ def child_select(node_pos, cursor_start, cursor_end):
 
 	search_space = SearchSpace(int(cursor_start), int(cursor_end))
 	search_space.child_search(root, None)
-	print(search_space.visual_select())
-	print(search_space.offset_start)
-	print(search_space.offset_end)
-	return search_space.offset_start, search_space.offset_end, search_space.visual_select()
+	# print(search_space.visual_select())
+	# print(search_space.offset_start)
+	# print(search_space.offset_end)
+	return search_space.offset_start, search_space.offset_end, search_space.visual_select("Error: No child node.")
 
 
 def next_sibling_select(node_pos, cursor_start, cursor_end):
@@ -249,10 +267,10 @@ def next_sibling_select(node_pos, cursor_start, cursor_end):
 
 	search_space = SearchSpace(int(cursor_start), int(cursor_end))
 	search_space.next_sibling_search(root, None)
-	print(search_space.visual_select())
-	print(search_space.offset_start)
-	print(search_space.offset_end)
-	return search_space.offset_start, search_space.offset_end, search_space.visual_select()
+	# print(search_space.visual_select())
+	# print(search_space.offset_start)
+	# print(search_space.offset_end)
+	return search_space.offset_start, search_space.offset_end, search_space.visual_select("Error: No next sibling node.")
 
 
 def prev_sibling_select(node_pos, cursor_start, cursor_end):
@@ -261,10 +279,10 @@ def prev_sibling_select(node_pos, cursor_start, cursor_end):
 
 	search_space = SearchSpace(int(cursor_start), int(cursor_end))
 	search_space.prev_sibling_search(root)
-	print(search_space.visual_select())
-	print(search_space.offset_start)
-	print(search_space.offset_end)
-	return search_space.offset_start, search_space.offset_end, search_space.visual_select()
+	# print(search_space.visual_select())
+	# print(search_space.offset_start)
+	# print(search_space.offset_end)
+	return search_space.offset_start, search_space.offset_end, search_space.visual_select("Error: No previous sibling node.")
 
 
 def tree_construct(data, parent, next_node, next_uncle):
@@ -291,10 +309,10 @@ def init_tree():
 	tree_construct(data["root"][0], None, None, None)
 
 
-with open("hello_output.txt") as data_file:
-	data = json.load(data_file)
+# with open("hello.txt") as data_file:
+# 	data = json.load(data_file)
 
-	prev_sibling_select(data["root"], 142, 144)
+# 	print(parent_select(data["root"], 144, 145))
 
 
 
