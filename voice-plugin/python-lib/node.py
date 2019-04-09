@@ -158,29 +158,24 @@ class SearchSpace():
 			return
 
 
-	def child_search(self, node_pos, next_node_pos):
+	def child_search(self, node_pos):
+		for child in node_pos["children"]: 
+			if int(child["start"]["offset"]) == self.cursor_start and int(child["end"]["offset"]) == self.cursor_end:
+				if child["children"] is []:
+					self.set_result(None)
+				else:
+					self.set_result(child["children"][0])
+				return
+			
+			if int(child["start"]["offset"]) > self.cursor_end:
+				self.set_result(None)
+				return
 
-		for i in range(len(node_pos["children"])):
-			# if next_node_pos is None:
-			# 	print(str(node_pos["children"][i]["offset"]) + "next is none")
-			# else:
-			# 	print(str(node_pos["children"][i]["offset"]) + "next is " + str(next_node_pos["offset"]))
+			if int(child["end"]["offset"]) < self.cursor_start:
+				continue;
 
-			if int(node_pos["children"][i]["offset"]) > self.cursor_start:
-				self.child_search(node_pos["children"][i - 1], node_pos["children"][i])
-				break;
-			elif int(node_pos["children"][i]["offset"]) == self.cursor_start:
-				if i == len(node_pos["children"]) - 1 or self.cursor_end == -1:
-					self.set_child_result(node_pos["children"][i], None, next_node_pos)
-					self.child_search(node_pos["children"][i], None)
-				elif self.cursor_end <= int(node_pos["children"][i + 1]["offset"]):
-					self.set_child_result(node_pos["children"][i], node_pos["children"][i + 1], next_node_pos)
-					self.child_search(node_pos["children"][i], node_pos["children"][i + 1])
-				break;
-			elif i == len(node_pos["children"]) - 1:
-				self.child_search(node_pos["children"][i], None)
-			else:
-				pass
+			self.child_search(child)
+			return
 
 	def next_sibling_search(self, node_pos, next_node_pos):
 		for i in range(len(node_pos["children"])):
@@ -236,7 +231,6 @@ def node_select(node_pos):
 
 
 def parent_select(node_pos, cursor_start, cursor_end):
-
 	root = {}
 	root["children"] = node_pos
 
@@ -253,8 +247,8 @@ def child_select(node_pos, cursor_start, cursor_end):
 	root = {}
 	root["children"] = node_pos
 
-	search_space = SearchSpace(int(cursor_start), int(cursor_end))
-	search_space.child_search(root, None)
+	search_space = SearchSpace(int(cursor_start), int(cursor_end), "No child.")
+	search_space.child_search(root)
 	# print(search_space.visual_select())
 	# print(search_space.offset_start)
 	# print(search_space.offset_end)
@@ -312,7 +306,7 @@ def init_tree():
 # with open("hello.txt") as data_file:
 # 	data = json.load(data_file)
 
-# 	print(parent_select(data["root"], 144, 145))
+# 	print(child_select(data["root"], 144, 149))
 
 
 
