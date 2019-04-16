@@ -12,6 +12,9 @@ from pprint import pprint
 # reload(switch)
 # reload(switch)
 
+RESERVED_WORDS_COND = ["function", "variable"]
+RESERVED_WORDS_UNCOND = ["auto", "return", "char", "string", "bool", "int", "float", "double"]
+
 def print_error(err):
 	return ":echo \"" + err + "\""
 
@@ -77,12 +80,60 @@ def node_dispatcher(command, node_pos, cursor_start, cursor_end):
 	else:
 		print_error("Invalid node command.")
 
+def node_dispatcher_current(node_pos, line_start, col_start, line_end, col_end):
+	return node.current_select(node_pos["root"], line_start, col_start, line_end, col_end)
+
+def node_search(command, node_pos, line, col):
+	commands = command.split(" ")
+	if len(commands) < 3:
+		return -1, -1, search_format_error()
+
+	# search AST using DFS and find out the first occurence after cursor
+
+	# the first argument is commands[2]
+	if commands[2].lower() == "function":
+		# search 1st occurence of a func name
+
+		if len(commands) < 4:
+			return -1, -1, search_format_error()
+
+		# concate the rest of arguments as function name
+		# a string with no space
+		func_name = "".join(commands[3:]).lower()
+		return node.function_search(node_pos["root"], line, col, func_name)
+
+	elif commands[2].lower() == "variable":
+		# search 1st occurence of a var name
+
+		if len(commands) < 4:
+			return -1, -1, search_format_error()
+
+		# concate the rest of arguments as var name
+		# a string with no space
+		var_name = "".join(commands[3:]).lower()
+		return node.variable_search(node_pos["root"], line, col, var_name)
+
+	elif commands[2] in RESERVED_WORDS_COND:
+		# search 1st occurence of a loop or decision
+		pass
+
+	elif commands[2] in RESERVED_WORDS_UNCOND:
+		# search 1st occurence of a reserved word
+		pass
+
+	else:
+		# search by plain text
+		pass
+
+
+
 def handle_json(text):
 	text = text.replace('"', "000\"")
 	text = text.replace("'", '"')
 	text = text.replace("000\"", "'")
 
 	return json.loads(text)
+
 
 
 # print(voice_command("switch mode"))
