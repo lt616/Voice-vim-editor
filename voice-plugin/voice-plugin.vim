@@ -13,13 +13,51 @@ sys.path.append('./python-lib')
 import dispatcher
 import vim
 
-print(vim.eval("g:cursor_start"))
-print(vim.eval("g:cursor_end"))
+#print(vim.eval("g:cursor_start"))
+#print(vim.eval("g:cursor_end"))
 
 start_pos, end_pos, res = dispatcher.node_dispatcher(vim.eval("a:opt"), vim.eval("a:node_pos"), vim.eval("g:cursor_start"), vim.eval("g:cursor_end"))
 
-print("str " + str(start_pos) + " " + str(end_pos))
+#print("str " + str(start_pos) + " " + str(end_pos))
 
+#print(res)
+
+vim.command("let g:cursor_start = %s"% start_pos)
+vim.command("let g:cursor_end = %s"% end_pos)
+vim.command(res)
+EOF
+endfunction
+
+
+function! VisualSelectCurrent(node_pos, line_start, col_start, line_end, col_end)
+python3 << EOF
+import sys
+from importlib import reload
+sys.path.append('./python-lib')
+import dispatcher
+import vim
+
+start_pos, end_pos, res = dispatcher.node_dispatcher_current(vim.eval("a:node_pos"), vim.eval("a:line_start"), vim.eval("a:col_start"), vim.eval("a:line_end"), vim.eval("a:col_end"))
+print(res)
+
+
+vim.command("let g:cursor_start = %s"% start_pos)
+vim.command("let g:cursor_end = %s"% end_pos)
+vim.command(res)
+
+EOF
+endfunction
+
+
+function! VisualSearch(search_cmd, node_pos, line, column)
+python3 << EOF
+import sys
+from importlib import reload
+sys.path.append('./python-lib')
+import dispatcher
+import vim
+
+start_pos, end_pos, res = dispatcher.node_search(vim.eval("a:search_cmd"), vim.eval("a:node_pos"), vim.eval("a:line"), vim.eval("a:column"))
 print(res)
 
 vim.command("let g:cursor_start = %s"% start_pos)
@@ -28,28 +66,51 @@ vim.command(res)
 EOF
 endfunction
 
+
 function! VoiceCommand(command)
+
+"let visual_pos = GetVisualSelection()
 
 if a:command =~ "select current node"
 	" get current cursor position
-	let file_name = expand('%:t:r')
-	let ext_name = expand('%:e')
-	let line_pos = line(".")
-	let col_pos = virtcol('.')
-	let file = file_name . "." . ext_name
+	"let file_name = expand('%:t:r')
+	"let ext_name = expand('%:e')
+	"let line_pos = line(".")
+	"let col_pos = virtcol('.')
+	"let file = file_name . "." . ext_name
 	
 	" get the most inner node at current cursor position using libclang
-	let node_pos = libclang#location#extent(file, line_pos, col_pos)
+	"let node_pos = libclang#location#extent(file, line_pos, col_pos)
 	
 	" if current cursor position is not a valid node
-	if empty(node_pos) == 1
-		echom "Error: Current position doesn't have a node."
-		return
-	endif
+	"if empty(node_pos) == 1
+	"	echom Error: Current position doesn't have a node."
+	"	return
+	"endif
 
-	let temp_pos = VisualSelect("current", node_pos)
-	echom g:cursor_start
-	echom g:cursor_end
+	"let temp_pos = VisualSelect("current", node_pos)
+	" echom g:cursor_start
+	" echom g:cursor_end
+
+        " get  file name
+        let file_name = expand('%:t:r')
+        let ext_name = expand('%:e')
+        let file = file_name . "." . ext_name
+
+        " get entire AST
+        let ast = libclang#AST#non_system_headers#all(file)
+
+	"let line = getpos(".")
+	let [line_start, column_start] = getpos("'<")[1:2]
+        let [line_end, column_end] = getpos("'>")[1:2]
+	echom line_start
+	echom line_end
+	echom column_start
+	echom column_end
+
+	"echom line
+	let temp_pos = VisualSelectCurrent(ast, line_start, column_start, line_end, column_end)
+	
 	return
 endif
 
@@ -89,7 +150,7 @@ if a:command =~ "select child node"
 	" get entire AST
 	let ast = libclang#AST#non_system_headers#all(file)
 
-	let temp_pos = VisualSelect("child", ast)
+	let temp_pos = VisualSearch("child", ast)
 	return
 endif
 
@@ -131,6 +192,21 @@ if a:command =~ "select previous sibling node"
 	return
 endif
 
+if a:command =~ "search node"
+	" get file name
+        let file_name = expand('%:t:r')
+        let ext_name = expand('%:e')
+        let file = file_name . "." . ext_name
+
+        " get entire AST
+        let ast = libclang#AST#non_system_headers#all(file)
+
+	let [line, column] = getpos(".")[1:2]
+
+        let temp_pos = VisualSearch(a:command, ast, line, column)
+        return
+endif
+
 python3 << EOF
 import sys
 from importlib import reload
@@ -159,10 +235,6 @@ vim.command(res)
 
 EOF
 endfunction
-
-
-
-
 
 
 function! Reload()
@@ -195,7 +267,6 @@ echom value
 endfunction
 
 function! Test(command)
-vim.command("w !wc -m")
-"let ast = libclang#AST#non_system_headers#all('hello_libclang.cpp')
-"echom ast
+let ast = libclang#AST#non_system_headers#all('deduction.cpp')
+echom ast
 endfunction

@@ -91,18 +91,7 @@ def node_search(command, node_pos, line, col):
 	# search AST using DFS and find out the first occurence after cursor
 
 	# the first argument is commands[2]
-	if commands[2].lower() == "function":
-		# search 1st occurence of a func name
-
-		if len(commands) < 4:
-			return -1, -1, search_format_error()
-
-		# concate the rest of arguments as function name
-		# a string with no space
-		func_name = "".join(commands[3:]).lower()
-		return node.function_search(node_pos["root"], line, col, func_name)
-
-	elif commands[2].lower() == "variable":
+	if commands[2].lower() == "function" or commands[2].lower() == "variable":
 		# search 1st occurence of a var name
 
 		if len(commands) < 4:
@@ -112,6 +101,17 @@ def node_search(command, node_pos, line, col):
 		# a string with no space
 		var_name = "".join(commands[3:]).lower()
 		return node.variable_search(node_pos["root"], line, col, var_name)
+
+	elif commands[2].lower() == "declaration":
+		# search declaration of a func / variable
+
+		if len(commands) < 4:
+			return -1, -1, search_format_error()
+
+		# concate the rest of arguments as var name
+		# a string with no space
+		var_name = "".join(commands[3:]).lower()
+		return node.declaration_search(node_pos["root"], line, col, var_name)				
 
 	elif commands[2] in RESERVED_WORDS_COND:
 		# search 1st occurence of a loop or decision

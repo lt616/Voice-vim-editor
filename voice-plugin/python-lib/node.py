@@ -165,25 +165,6 @@ class SearchSpace():
 			return
 
 
-	def func_search(self, node_pos, func_name):
-		for child in node_pos["children"]:
-			if not self.reach_cursor:
-				if self.compare_line_col(int(child["end"]["line"]), int(child["end"]["column"]), self.cursor_start, self.cursor_end) < 0:
-					continue;
-
-				if self.compare_line_col(int(child["line"]), int(child["column"]), self.cursor_start, self.cursor_end) >= 0:
-					self.reach_cursor = True
-
-			if self.reach_cursor:
-				if "kind" in child and child["kind"] == "CallExpr" and "spell" in child and child["spell"].lower() == func_name:
-						self.set_result(child)
-						return True
-
-			if self.func_search(child, func_name):
-				return True
-
-		return False
-
 	def var_search(self, node_pos, var_name):
 		for child in node_pos["children"]:
 			if not self.reach_cursor:
@@ -195,14 +176,25 @@ class SearchSpace():
 
 			if self.reach_cursor:
 				if "kind" in child and child["kind"] == "DeclRefExpr" and "spell" in child and child["spell"].lower() == var_name:
-						print(child)
 						self.set_result(child)
 						return True
 
 			if self.var_search(child, var_name):
 				return True
 
-		return False		
+		return False
+
+
+	def decl_search(self, node_pos, var_name):
+		for child in node_pos["children"]:
+			if "kind_type" in child and child["kind_type"] == "Declaration" and "spell" in child and child["spell"].lower() == var_name:
+				self.set_result(child)
+				return True
+
+			if self.decl_search(child, var_name):
+				return True
+
+		return False			
 
 
 # virtual select
@@ -274,22 +266,22 @@ def prev_sibling_select(node_pos, cursor_start, cursor_end):
 	return search_space.offset_start, search_space.offset_end, search_space.visual_select("Error: No previous sibling node.")
 
 
-def function_search(node_pos, cursor_line, cursor_col, func_name):
-	root = {}
-	root["children"] = node_pos
-
-	search_space = SearchSpace(int(cursor_line), int(cursor_col), "No result.")
-	search_space.func_search(root, func_name)
-
-	return search_space.offset_start, search_space.offset_end, search_space.visual_select("Error: No result.")
-
-
 def variable_search(node_pos, cursor_line, cursor_col, var_name):
 	root = {}
 	root["children"] = node_pos
 
 	search_space = SearchSpace(int(cursor_line), int(cursor_col), "No result.")
 	search_space.var_search(root, var_name)
+
+	return search_space.offset_start, search_space.offset_end, search_space.visual_select("Error: No result.")	
+
+
+def declaration_search(node_pos, cursor_line, cursor_col, var_name):
+	root = {}
+	root["children"] = node_pos
+
+	search_space = SearchSpace(int(cursor_line), int(cursor_col), "No result.")
+	search_space.decl_search(root, var_name)
 
 	return search_space.offset_start, search_space.offset_end, search_space.visual_select("Error: No result.")	
 
@@ -330,7 +322,7 @@ def variable_search(node_pos, cursor_line, cursor_col, var_name):
 # with open("hello.txt") as data_file:
 # 	data = json.load(data_file)
 
-# 	print(variable_search(data["root"], 1, 1, "i"))
+# 	print(declaration_search(data["root"], 10, 1, "main"))
 
 
 
