@@ -108,7 +108,14 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
     VoiceCommand("search node declaration [name]")
     ```
     Show the declaration of the function or declaration.
-  
+    
+  - [x] **Search if / switch / for / while blocks with conditions**
+    ```
+    VoiceCommand("search node [if / switch / for / while] [conditions]")
+    ```
+    Currently a searchable condition can only be variable name. Need to modify libclang-vim to enable primitive value search.
+    Not support 1: do while; 2: in-line if expression yet; 3: nested search
+    
   - [ ] **Delete node**
   
    
