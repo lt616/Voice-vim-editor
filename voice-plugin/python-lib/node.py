@@ -225,14 +225,18 @@ class SearchSpace():
 
 	def decl_search(self, node_pos, var_name):
 		for child in node_pos["children"]:
+			if not self.reach_cursor:
+				if self.compare_line_col(int(child["line"]), int(child["column"]), self.cursor_start, self.cursor_end) >= 0:
+					self.reach_cursor = True
+
 			if "kind_type" in child and child["kind_type"] == "Declaration" and "spell" in child and child["spell"].lower() == var_name:
-				self.set_result(child)
-				return True
+				if self.reach_cursor:
+					self.after_cursor_results.append(self.set_dict_result(child))
+				else:
+					self.before_cursor_results.append(self.set_dict_result(child))
 
-			if self.decl_search(child, var_name):
-				return True
+			self.decl_search(child, var_name)
 
-		return False
 
 	def cond_search(self, node_pos, keywords, cond):
 		for child in node_pos["children"]:
@@ -337,7 +341,7 @@ def declaration_search(node_pos, cursor_line, cursor_col, var_name):
 	search_space = SearchSpace(int(cursor_line), int(cursor_col), "No result.")
 	search_space.decl_search(root, var_name)
 
-	return search_space.offset_start, search_space.offset_end, search_space.visual_select("Error: No result.")	
+	return -2, -2, search_space.return_all_results()
 
 
 def condition_search(node_pos, cursor_line, cursor_col, keywords, cond):
@@ -346,8 +350,6 @@ def condition_search(node_pos, cursor_line, cursor_col, keywords, cond):
 
 	search_space = SearchSpace(int(cursor_line), int(cursor_col), "No result.")
 	search_space.cond_search(root, keywords, cond)
-
-
 
 	return -2, -2, search_space.return_all_results()
 

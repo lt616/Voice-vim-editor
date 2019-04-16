@@ -84,7 +84,7 @@ import dispatcher
 import vim
 
 start_pos, end_pos, res = dispatcher.node_search(vim.eval("a:search_cmd"), vim.eval("a:node_pos"), vim.eval("a:line"), vim.eval("a:column"))
-print(res)
+#print(res)
 
 if start_pos == -2:
     if res == []:
@@ -184,7 +184,7 @@ if a:command =~ "select child node"
 	" get entire AST
 	let ast = libclang#AST#non_system_headers#all(file)
 
-	let temp_pos = VisualSearch("child", ast)
+	let temp_pos = VisualSelect("child", ast)
 	return
 endif
 
@@ -309,3 +309,9 @@ function! Test(command)
 let ast = libclang#AST#non_system_headers#all('deduction.cpp')
 echom ast
 endfunction
+
+nnoremap sn :<C-u>call VoiceCommand("select current node")<cr>
+nnoremap sp :<C-u>call VoiceCommand("select parent node")<cr>
+nnoremap sc :<C-u>call VoiceCommand("select child node")<cr>
+nnoremap sps :<C-u>call VoiceCommand("select previous sibling node")<cr>
+nnoremap sns :<C-u>call VoiceCommand("select next sibling node")<cr>
