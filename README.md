@@ -97,6 +97,11 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
     VoiceCommand("search node [function / variable] [name]")
     ```
     Show the first occurrence after current cursor position.
+    
+    ```
+    VoiceCommand("next result")
+    ```
+    Show next result in order.
   
   - [x] **Search a declaration of a function / variable**
     ```
