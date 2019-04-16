@@ -1,6 +1,8 @@
 let g:mode = "n"
 let g:cursor_start = -1
 let g:cursor_end = -1
+let g:search_results = []
+let g:search_index = -1
 
 " Vim Function for selecting a node in virtual mode
 " Argument 00: node_pos fake json
@@ -25,6 +27,30 @@ start_pos, end_pos, res = dispatcher.node_dispatcher(vim.eval("a:opt"), vim.eval
 vim.command("let g:cursor_start = %s"% start_pos)
 vim.command("let g:cursor_end = %s"% end_pos)
 vim.command(res)
+EOF
+endfunction
+
+
+function! VisualNextSearchResult()
+python3 << EOF
+import sys
+from importlib import reload
+sys.path.append('./python-lib')
+import dispatcher
+import vim
+
+res = vim.eval("g:search_results")
+index = int(vim.eval("g:search_index"))
+
+if res == []:
+    vim.command("echom 'No result.'")
+else:
+    index += 1
+    if index >= len(res):
+        index = 0
+
+    vim.command("let g:search_index = %d"% index)
+    vim.command("normal! %sG %s| 2h v %sG %s|"% (res[index]["start_line"], res[index]["start_column"], res[index]["end_line"], res[index]["end_column"]))
 EOF
 endfunction
 
@@ -60,9 +86,17 @@ import vim
 start_pos, end_pos, res = dispatcher.node_search(vim.eval("a:search_cmd"), vim.eval("a:node_pos"), vim.eval("a:line"), vim.eval("a:column"))
 print(res)
 
-vim.command("let g:cursor_start = %s"% start_pos)
-vim.command("let g:cursor_end = %s"% end_pos)
-vim.command(res)
+if start_pos == -2:
+    if res == []:
+        vim.command("echo 'No result.'")
+        vim.command("let g:search_results = %s"% res)
+        vim.command("let g:search_index = %d"% -1)
+    else:
+        vim.command("normal! %sG %s| 2h v %sG %s|"% (res[0]["start_line"], res[0]["start_column"], res[0]["end_line"], res[0]["end_column"]))
+        vim.command("let g:search_results = %s"% res)
+        vim.command("let g:search_index = %d"% 0)
+else:
+    vim.command(res)
 EOF
 endfunction
 
@@ -192,6 +226,11 @@ if a:command =~ "select previous sibling node"
 	return
 endif
 
+if a:command =~ "next result"
+	let temp_pos = VisualNextSearchResult()
+	return
+endif
+
 if a:command =~ "search node"
 	" get file name
         let file_name = expand('%:t:r')
@@ -203,8 +242,8 @@ if a:command =~ "search node"
 
 	let [line, column] = getpos(".")[1:2]
 
-        let temp_pos = VisualSearch(a:command, ast, line, column)
-        return
+        let temp_pos = VisualSearch(a:command, ast, line, column) 
+	return
 endif
 
 python3 << EOF

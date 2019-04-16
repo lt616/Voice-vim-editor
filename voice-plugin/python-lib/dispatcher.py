@@ -115,6 +115,8 @@ def node_search(command, node_pos, line, col):
 
 	elif commands[2] in RESERVED_WORDS_COND:
 		# search 1st occurence of a loop or decision
+		
+
 		pass
 
 	elif commands[2] in RESERVED_WORDS_UNCOND:

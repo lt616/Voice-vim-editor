@@ -23,6 +23,9 @@ class SearchSpace():
 
 		self.reach_cursor = False
 
+		self.before_cursor_results = []
+		self.after_cursor_results = []
+
 	def visual_select(self, err_str):
 		if self.res_line_start == -1 and self.res_col_end == -1:
 			# exception.print_error(err_str)
@@ -32,6 +35,9 @@ class SearchSpace():
 			return "normal! " + str(self.res_line_start) + "G " + str(self.res_col_start) + "| 2h v " + "G$"
 		else:
 			return "normal! " + str(self.res_line_start) + "G " + str(self.res_col_start) + "| 2h v " + str(self.res_line_end) + "G " + str(self.res_col_end) + "|" 
+
+	def return_all_results(self):
+		return self.after_cursor_results + self.before_cursor_results
 
 	def set_result(self, node_pos):
 		if node_pos is None:
@@ -51,6 +57,19 @@ class SearchSpace():
 		self.res_line_end = node_pos["end"]["line"]
 		self.res_col_end = node_pos["end"]["column"]
 		self.offset_end = node_pos["end"]["offset"]
+ 
+
+	def set_dict_result(self, node_pos):
+		temp = {}
+		temp["start_line"] = node_pos["line"]
+		temp["start_column"] = node_pos["column"]
+		temp["start_offset"] = node_pos["offset"]
+
+		temp["end_line"] = node_pos["end"]["line"]
+		temp["end_column"] = node_pos["end"]["column"]
+		temp["end_offset"] = node_pos["end"]["offset"]
+
+		return temp
 
 	def compare_line_col(self, x_line, x_col, y_line, y_col):
 		if x_line < y_line:
@@ -168,21 +187,16 @@ class SearchSpace():
 	def var_search(self, node_pos, var_name):
 		for child in node_pos["children"]:
 			if not self.reach_cursor:
-				if self.compare_line_col(int(child["end"]["line"]), int(child["end"]["column"]), self.cursor_start, self.cursor_end) < 0:
-					continue;
-
 				if self.compare_line_col(int(child["line"]), int(child["column"]), self.cursor_start, self.cursor_end) >= 0:
 					self.reach_cursor = True
 
-			if self.reach_cursor:
-				if "kind" in child and child["kind"] == "DeclRefExpr" and "spell" in child and child["spell"].lower() == var_name:
-						self.set_result(child)
-						return True
+			if "kind" in child and child["kind"] == "DeclRefExpr" and "spell" in child and child["spell"].lower() == var_name:
+				if self.reach_cursor:
+					self.after_cursor_results.append(self.set_dict_result(child))
+				else:
+					self.before_cursor_results.append(self.set_dict_result(child))
 
-			if self.var_search(child, var_name):
-				return True
-
-		return False
+			self.var_search(child, var_name)
 
 
 	def decl_search(self, node_pos, var_name):
@@ -273,7 +287,7 @@ def variable_search(node_pos, cursor_line, cursor_col, var_name):
 	search_space = SearchSpace(int(cursor_line), int(cursor_col), "No result.")
 	search_space.var_search(root, var_name)
 
-	return search_space.offset_start, search_space.offset_end, search_space.visual_select("Error: No result.")	
+	return -2, -2, search_space.return_all_results()
 
 
 def declaration_search(node_pos, cursor_line, cursor_col, var_name):
@@ -322,7 +336,7 @@ def declaration_search(node_pos, cursor_line, cursor_col, var_name):
 # with open("hello.txt") as data_file:
 # 	data = json.load(data_file)
 
-# 	print(declaration_search(data["root"], 10, 1, "main"))
+# 	print(variable_search(data["root"], 12, 1, "i"))
 
 
 
