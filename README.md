@@ -92,7 +92,17 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
     ```
     If there is no node selected or no next sibling, shows error message. Otherwise select the next sibling node in visual mode.
   
-  - [ ] **Search a node**
+  - [x] **Search a function name / variable name**
+    ```
+    VoiceCommand("search node [function / variable] [name]")
+    ```
+    Show the first occurrence after current cursor position.
+  
+  - [x] **Search a declaration of a function / variable**
+    ```
+    VoiceCommand("search node declaration [name]")
+    ```
+    Show the declaration of the function or declaration.
   
   - [ ] **Delete node**
   
