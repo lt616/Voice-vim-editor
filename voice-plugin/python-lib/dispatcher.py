@@ -12,7 +12,7 @@ from pprint import pprint
 # reload(switch)
 # reload(switch)
 
-RESERVED_WORDS_COND = ["function", "variable"]
+RESERVED_WORDS_COND = ["if", "switch", "for", "while", "dowhile"]
 RESERVED_WORDS_UNCOND = ["auto", "return", "char", "string", "bool", "int", "float", "double"]
 
 def print_error(err):
@@ -115,7 +115,12 @@ def node_search(command, node_pos, line, col):
 
 	elif commands[2] in RESERVED_WORDS_COND:
 		# search 1st occurence of a loop or decision
-		
+
+		keywords = {}
+		for i in range(3, len(commands)):
+			keywords[commands[i]] = False
+
+		return node.condition_search(node_pos["root"], line, col, keywords, commands[2])
 
 		pass
 
@@ -135,6 +140,7 @@ def handle_json(text):
 	text = text.replace("000\"", "'")
 
 	return json.loads(text)
+
 
 
 

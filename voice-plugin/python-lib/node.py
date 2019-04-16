@@ -23,6 +23,9 @@ class SearchSpace():
 
 		self.reach_cursor = False
 
+		self.condition_nums = {"if": 1, "switch": 1, "for": 3, "while": 1}
+		self.condition_stmts = {"if": "IfStmt", "switch": "SwitchStmt", "for": "ForStmt", "while": "WhileStmt"}
+
 		self.before_cursor_results = []
 		self.after_cursor_results = []
 
@@ -82,6 +85,27 @@ class SearchSpace():
 			elif x_col > y_col:
 				return 1
 			return 0
+
+	def check_condition(self, node_pos, keywords):
+		for word in keywords.keys():
+			if "spell" in node_pos and node_pos["spell"] == word:
+				keywords[word] = True
+
+		for child in node_pos["children"]:
+			self.check_condition(child, keywords)
+
+	def check_conditions(self, node_pos, keywords, num_cond):
+		if num_cond > len(node_pos["children"]):
+			return False
+
+		for i in range(0, num_cond):
+			self.check_condition(node_pos["children"][i], keywords)
+
+		for key in keywords.keys():
+			if not keywords[key]:
+				return False
+
+		return True
 
 	def current_search(self, node_pos, line_start, column_start, line_end, column_end, node_parent):
 
@@ -208,7 +232,23 @@ class SearchSpace():
 			if self.decl_search(child, var_name):
 				return True
 
-		return False			
+		return False
+
+	def cond_search(self, node_pos, keywords, cond):
+		for child in node_pos["children"]:
+			if not self.reach_cursor:
+				if self.compare_line_col(int(child["line"]), int(child["column"]), self.cursor_start, self.cursor_end) >= 0:
+					self.reach_cursor = True
+
+			if "kind" in child and child["kind"] == self.condition_stmts[cond] and self.check_conditions(child, keywords, self.condition_nums[cond]):
+				if self.reach_cursor:
+					self.after_cursor_results.append(self.set_dict_result(child))
+				else:
+					self.before_cursor_results.append(self.set_dict_result(child))
+
+			self.cond_search(child, keywords, cond)
+
+
 
 
 # virtual select
@@ -300,6 +340,17 @@ def declaration_search(node_pos, cursor_line, cursor_col, var_name):
 	return search_space.offset_start, search_space.offset_end, search_space.visual_select("Error: No result.")	
 
 
+def condition_search(node_pos, cursor_line, cursor_col, keywords, cond):
+	root = {}
+	root["children"] = node_pos
+
+	search_space = SearchSpace(int(cursor_line), int(cursor_col), "No result.")
+	search_space.cond_search(root, keywords, cond)
+
+
+
+	return -2, -2, search_space.return_all_results()
+
 
 
 
@@ -336,7 +387,7 @@ def declaration_search(node_pos, cursor_line, cursor_col, var_name):
 # with open("hello.txt") as data_file:
 # 	data = json.load(data_file)
 
-# 	print(variable_search(data["root"], 12, 1, "i"))
+# 	print(condition_search(data["root"], 12, 1, {"i": False, "j": False}, "for"))
 
 
 
