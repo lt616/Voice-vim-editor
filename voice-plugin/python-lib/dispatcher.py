@@ -18,6 +18,9 @@ RESERVED_WORDS_UNCOND = ["auto", "return", "char", "string", "bool", "int", "flo
 def print_error(err):
 	return ":echo \"" + err + "\""
 
+def select_nodes(nodes):
+	return [node for node in nodes if "file" in node and "parent" in node and node["file"] == node["parent"]]
+
 def voice_command(command, mode):
 	# check if imported correct
 	# if "switch" not in dir():
@@ -66,22 +69,22 @@ def node_dispatcher(command, node_pos, cursor_start, cursor_end):
 		return node_pos["start"]["offset"], node_pos["end"]["offset"], node.node_select(node_pos)
 
 	elif command == "parent":
-		return node.parent_select(node_pos["root"], cursor_start, cursor_end)
+		return node.parent_select(select_nodes(node_pos["root"]), cursor_start, cursor_end)
 
 	elif command == "child":
-		return node.child_select(node_pos["root"], cursor_start, cursor_end)
+		return node.child_select(select_nodes(node_pos["root"]), cursor_start, cursor_end)
 
 	elif command == "next sibling":
-		return node.next_sibling_select(node_pos["root"], cursor_start, cursor_end)
+		return node.next_sibling_select(select_nodes(node_pos["root"]), cursor_start, cursor_end)
 
 	elif command == "previous sibling":
-		return node.prev_sibling_select(node_pos["root"], cursor_start, cursor_end)
+		return node.prev_sibling_select(select_nodes(node_pos["root"]), cursor_start, cursor_end)
 
 	else:
 		print_error("Invalid node command.")
 
 def node_dispatcher_current(node_pos, line_start, col_start, line_end, col_end):
-	return node.current_select(node_pos["root"], line_start, col_start, line_end, col_end)
+	return node.current_select(select_nodes(node_pos["root"]), line_start, col_start, line_end, col_end)
 
 def node_search(command, node_pos, line, col):
 	commands = command.split(" ")
@@ -100,7 +103,7 @@ def node_search(command, node_pos, line, col):
 		# concate the rest of arguments as var name
 		# a string with no space
 		var_name = "".join(commands[3:]).lower()
-		return node.variable_search(node_pos["root"], line, col, var_name)
+		return node.variable_search(select_nodes(node_pos["root"]), line, col, var_name)
 
 	elif commands[2].lower() == "declaration":
 		# search declaration of a func / variable
@@ -111,7 +114,7 @@ def node_search(command, node_pos, line, col):
 		# concate the rest of arguments as var name
 		# a string with no space
 		var_name = "".join(commands[3:]).lower()
-		return node.declaration_search(node_pos["root"], line, col, var_name)				
+		return node.declaration_search(select_nodes(node_pos["root"]), line, col, var_name)				
 
 	elif commands[2] in RESERVED_WORDS_COND:
 		# search 1st occurence of a loop or decision
@@ -120,7 +123,7 @@ def node_search(command, node_pos, line, col):
 		for i in range(3, len(commands)):
 			keywords[commands[i]] = False
 
-		return node.condition_search(node_pos["root"], line, col, keywords, commands[2])
+		return node.condition_search(select_nodes(node_pos["root"]), line, col, keywords, commands[2])
 
 	else:
 		# search by plain text
@@ -129,8 +132,8 @@ def node_search(command, node_pos, line, col):
 		for i in range(2, len(commands)):
 			keywords[commands[i]] = {}
 
-		return node.inline_search(node_pos["root"], line, col, keywords)
-		
+		return node.inline_search(select_nodes(node_pos["root"]), line, col, keywords)
+
 
 
 
