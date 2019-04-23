@@ -114,10 +114,16 @@ Type the following command in vim command(line) mode. Commands are non-case-sens
     VoiceCommand("search node [if / switch / for / while] [conditions]")
     ```
     Currently a searchable condition can only be variable name. Need to modify libclang-vim to enable primitive value search.
+    A condition can be name of a variable, a integer / float / double / char / string literal.
+  
     Not support 1: do while; 2: in-line if expression yet; 3: nested search
     
-  - [ ] **Delete node**
-  
+  - [x] **Search line contains keywords**
+    ```
+    VoiceCommand("search node [conditions]")
+    ```
+    Search a line contains all specified keywords. The entire line will be highlighted instead of a node.
+    A keyword can be name of a variable, a integer / float / double / char / string literal.
    
 * **Other commands**
 
