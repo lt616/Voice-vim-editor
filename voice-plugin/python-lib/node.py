@@ -96,6 +96,7 @@ class SearchSpace():
 		for child in node_pos["children"]:
 			self.check_condition(child, keywords)
 
+
 	def check_conditions(self, node_pos, keywords, num_cond):
 		if num_cond > len(node_pos["children"]):
 			return False
@@ -108,6 +109,18 @@ class SearchSpace():
 				return False
 
 		return True
+
+
+	def check_inline_conditions(self, node_pos, keywords):
+		if "spell" in node_pos and node_pos["spell"].lower() in keywords:
+			keywords[node_pos["spell"]][int(node_pos["line"])] = True
+		elif "value" in node_pos and node_pos["value"].lower() in keywords:
+			keywords[node_pos["value"]][int(node_pos["line"])] = True
+
+		for child in node_pos["children"]:
+			self.check_inline_conditions(child, keywords)
+
+
 
 	def current_search(self, node_pos, line_start, column_start, line_end, column_end, node_parent):
 
@@ -256,6 +269,31 @@ class SearchSpace():
 			self.cond_search(child, keywords, cond)
 
 
+	def inline_search(self, node_pos, keywords):
+		for child in node_pos["children"]:
+			self.check_inline_conditions(node_pos, keywords)
+
+		_, line_list = keywords.popitem()
+
+		for line in line_list.keys():
+			line_flag = True
+			for keyword in keywords.keys():
+				if line not in keywords[keyword]:
+			 		line_flag = False
+			 		break
+
+			if line_flag:
+				if line < self.cursor_start:
+					self.before_cursor_results.append(line)
+				else:
+					self.after_cursor_results.append(line)
+
+		self.before_cursor_results.sort()
+		self.after_cursor_results.sort()
+
+
+
+
 
 
 # virtual select
@@ -357,6 +395,15 @@ def condition_search(node_pos, cursor_line, cursor_col, keywords, cond):
 	return -2, -2, search_space.return_all_results()
 
 
+def inline_search(node_pos, cursor_line, cursor_col, keywords):
+	root = {}
+	root["children"] = node_pos
+
+	search_space = SearchSpace(int(cursor_line), int(cursor_col), "No result.")
+	search_space.inline_search(root, keywords)
+
+	return -3, -3, search_space.return_all_results()
+
 
 
 
@@ -392,7 +439,7 @@ def condition_search(node_pos, cursor_line, cursor_col, keywords, cond):
 # with open("hello.txt") as data_file:
 # 	data = json.load(data_file)
 
-# 	print(next_sibling_select(data["root"], 171, 175))
+# 	print(inline_search(data["root"], 1, 1, {"i": {}, "0": {}, "5": {}}))
 
 
 

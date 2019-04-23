@@ -122,15 +122,15 @@ def node_search(command, node_pos, line, col):
 
 		return node.condition_search(node_pos["root"], line, col, keywords, commands[2])
 
-		pass
-
-	elif commands[2] in RESERVED_WORDS_UNCOND:
-		# search 1st occurence of a reserved word
-		pass
-
 	else:
 		# search by plain text
-		pass
+		
+		keywords = {}
+		for i in range(2, len(commands)):
+			keywords[commands[i]] = {}
+
+		return node.inline_search(node_pos["root"], line, col, keywords)
+		
 
 
 
