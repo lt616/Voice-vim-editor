@@ -35,9 +35,11 @@ class SearchSpace():
 			return "echo \"" + "Error: " + self.err_msg + "\""
 
 		if self.res_line_end == -1 or self.res_col_end == -1:
-			return "normal! " + str(self.res_line_start) + "G " + str(self.res_col_start) + "| 2h v " + "G$"
+			# return "normal! " + str(self.res_line_start) + "G " + str(self.res_col_start) + "| v " + "G$"
+			return "normal! " + str(self.offset_start) + "go v " + "G$"
 		else:
-			return "normal! " + str(self.res_line_start) + "G " + str(self.res_col_start) + "| 2h v " + str(self.res_line_end) + "G " + str(self.res_col_end) + "|" 
+			# return "normal! " + str(self.res_line_start) + "G " + str(self.res_col_start) + "| v " + str(self.res_line_end) + "G " + str(self.res_col_end) + "|" 
+			return "normal! " + str(self.offset_start) + "go v " + str(self.offset_end) + "go"
 
 	def return_all_results(self):
 		return self.after_cursor_results + self.before_cursor_results
@@ -88,7 +90,7 @@ class SearchSpace():
 
 	def check_condition(self, node_pos, keywords):
 		for word in keywords.keys():
-			if "spell" in node_pos and node_pos["spell"] == word:
+			if ("spell" in node_pos and node_pos["spell"] == word) or ("value" in node_pos and node_pos["value"]) == word:
 				keywords[word] = True
 
 		for child in node_pos["children"]:
@@ -169,6 +171,7 @@ class SearchSpace():
 	def next_sibling_search(self, node_pos):
 		children = node_pos["children"]
 		for i in range(len(children)): 
+
 			if int(children[i]["offset"]) == self.cursor_start and int(children[i]["end"]["offset"]) == self.cursor_end:
 				if i == len(children) - 1:
 					self.set_result(None)
@@ -389,7 +392,7 @@ def condition_search(node_pos, cursor_line, cursor_col, keywords, cond):
 # with open("hello.txt") as data_file:
 # 	data = json.load(data_file)
 
-# 	print(condition_search(data["root"], 12, 1, {"i": False, "j": False}, "for"))
+# 	print(next_sibling_select(data["root"], 171, 175))
 
 
 
