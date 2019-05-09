@@ -29,6 +29,8 @@ class SearchSpace():
 		self.before_cursor_results = []
 		self.after_cursor_results = []
 
+		self.line_results = {}
+
 	def visual_select(self, err_str):
 		if self.res_line_start == -1 and self.res_col_end == -1:
 			# exception.print_error(err_str)
@@ -96,6 +98,17 @@ class SearchSpace():
 		for child in node_pos["children"]:
 			self.check_condition(child, keywords)
 
+	def check_condition_inline(self, node_pos, keywords, line):
+		if node_pos["line"] != line:
+			return 
+
+		for word in keywords.keys():
+			if ("spell" in node_pos and node_pos["spell"] == word) or ("value" in node_pos and node_pos["value"]) == word:
+				keywords[word] = True
+
+		for child in node_pos["children"]:
+			self.check_condition(child, keywords)
+
 
 	def check_conditions(self, node_pos, keywords, num_cond):
 		if num_cond > len(node_pos["children"]):
@@ -120,6 +133,18 @@ class SearchSpace():
 		for child in node_pos["children"]:
 			self.check_inline_conditions(child, keywords)
 
+
+	def check_inline_node_conditions(self, node_pos, keywords, line):
+		self.check_condition_inline(node_pos, keywords, line)
+
+		res = True
+
+		for key in keywords.keys():
+			if not keywords[key]:
+				res = False
+			keywords[key] = False
+
+		return res
 
 
 	def current_search(self, node_pos, line_start, column_start, line_end, column_end, node_parent):
@@ -292,6 +317,53 @@ class SearchSpace():
 		self.after_cursor_results.sort()
 
 
+	def inline_node_search(self, node_pos, keywords):
+		new_keywords = {}
+		for keyword in keywords.keys():
+			new_keywords[keyword] = False
+
+		for child in node_pos["children"]:
+			self.check_inline_conditions(node_pos, keywords)
+
+		_, line_list = keywords.popitem()
+
+		for line in line_list.keys():
+			line_flag = True
+			for keyword in keywords.keys():
+				if line not in keywords[keyword]:
+			 		line_flag = False
+			 		break
+
+			if line_flag:
+				self.line_results[line] = True
+
+		self.extract_node_line(node_pos, new_keywords)
+
+	def extract_node_line(self, node_pos, keywords):
+		res = False
+		for child in node_pos["children"]:
+			if not self.reach_cursor:
+				if self.compare_line_col(int(child["line"]), int(child["column"]), self.cursor_start, self.cursor_end) >= 0:
+					self.reach_cursor = True
+
+			# if child selected early exit
+			if self.extract_node_line(child, keywords):
+				res = True
+				continue
+
+			if int(child["line"]) in self.line_results:
+				if self.check_inline_node_conditions(child, keywords, child["line"]):
+					if self.reach_cursor:
+						self.after_cursor_results.append(self.set_dict_result(child))
+					else:
+						self.before_cursor_results.append(self.set_dict_result(child))
+
+					res = True
+		return res
+
+
+
+
 
 
 
@@ -405,6 +477,16 @@ def inline_search(node_pos, cursor_line, cursor_col, keywords):
 	return -3, -3, search_space.return_all_results()
 
 
+def inline_node_search(node_pos, cursor_line, cursor_col, keywords):
+	root = {}
+	root["children"] = node_pos
+
+	search_space = SearchSpace(int(cursor_line), int(cursor_col), "No result.")
+	search_space.inline_node_search(root, keywords)
+
+	return -2, -2, search_space.return_all_results()
+
+
 
 
 
@@ -436,10 +518,10 @@ def inline_search(node_pos, cursor_line, cursor_col, keywords):
 # 	tree_construct(data["root"][0], None, None, None)
 
 
-# with open("hello.txt") as data_file:
-# 	data = json.load(data_file)
+with open("hello.txt") as data_file:
+	data = json.load(data_file)
 
-# 	print(inline_search(data["root"], 1, 1, {"i": {}, "0": {}, "5": {}}))
+	print(inline_node_search(data["root"], 1, 1, {'i': {}}))
 
 
 

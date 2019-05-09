@@ -125,8 +125,8 @@ def node_search(command, node_pos, line, col):
 
 		return node.condition_search(select_nodes(node_pos["root"]), line, col, keywords, commands[2])
 
-	else:
-		# search by plain text
+	elif commands[1].lower() == "line":
+		# search by line
 		
 		keywords = {}
 		for i in range(2, len(commands)):
@@ -134,6 +134,14 @@ def node_search(command, node_pos, line, col):
 
 		return node.inline_search(select_nodes(node_pos["root"]), line, col, keywords)
 
+	else:
+		# search by inline node
+		keywords = {}
+		for i in range(2, len(commands)):
+			keywords[commands[i]] = {}
+		print(keywords)
+
+		return node.inline_node_search(select_nodes(node_pos["root"]), line, col, keywords)
 
 
 
