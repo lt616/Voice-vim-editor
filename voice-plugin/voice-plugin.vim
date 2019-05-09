@@ -3,9 +3,31 @@ let g:cursor_start = -1
 let g:cursor_end = -1
 let g:search_results = []
 let g:search_index = -1
+let g:compile_args = ""
 
 " Vim Function for selecting a node in virtual mode
 " Argument 00: node_pos fake json
+
+function! ReadFlags()
+python3 << EOF
+import sys
+from importlib import reload
+import vim
+
+with open('config', 'r') as file:
+    data = file.read().replace('\n', '')
+    flags = data.split(" ")
+
+    flag_str = ""
+    for flag in flags:
+        flag_str += ", \""
+        flag_str += flag
+        flag_str += "\""
+
+    vim.command("let g:compile_args = '%s'"% flag_str)
+
+EOF
+endfunction
 
 function! VisualSelect(opt, node_pos)
 python3 << EOF
@@ -50,7 +72,12 @@ else:
         index = 0
 
     vim.command("let g:search_index = %d"% index)
-    vim.command("normal! %sG %s| 2h v %sG %s|"% (res[index]["start_line"], res[index]["start_column"], res[index]["end_line"], res[index]["end_column"]))
+
+    if type(res[index]) is str:
+        vim.command("normal! %sG ^"% res[index])
+        vim.command("normal! v $")
+    else:
+        vim.command("normal! %sG %s| 2h v %sG %s|"% (res[index]["start_line"], res[index]["start_column"], res[index]["end_line"], res[index]["end_column"]))
 EOF
 endfunction
 
@@ -64,8 +91,6 @@ import dispatcher
 import vim
 
 start_pos, end_pos, res = dispatcher.node_dispatcher_current(vim.eval("a:node_pos"), vim.eval("a:line_start"), vim.eval("a:col_start"), vim.eval("a:line_end"), vim.eval("a:col_end"))
-print(res)
-
 
 vim.command("let g:cursor_start = %s"% start_pos)
 vim.command("let g:cursor_end = %s"% end_pos)
@@ -95,6 +120,16 @@ if start_pos == -2:
         vim.command("normal! %sG %s| 2h v %sG %s|"% (res[0]["start_line"], res[0]["start_column"], res[0]["end_line"], res[0]["end_column"]))
         vim.command("let g:search_results = %s"% res)
         vim.command("let g:search_index = %d"% 0)
+elif start_pos == -3:
+    if res == []:
+        vim.command("echo 'No result.'")
+        vim.command("let g:search_results = %s"% res)
+        vim.command("let g:search_index = %d"% -1)
+    else:
+        vim.command("normal! %sG ^"% res[0])
+        vim.command("normal! v $")
+        vim.command("let g:search_results = %s"% res)
+        vim.command("let g:search_index = %d"% 0)
 else:
     vim.command(res)
 EOF
@@ -106,43 +141,21 @@ function! VoiceCommand(command)
 "let visual_pos = GetVisualSelection()
 
 if a:command =~ "select current node"
-	" get current cursor position
-	"let file_name = expand('%:t:r')
-	"let ext_name = expand('%:e')
-	"let line_pos = line(".")
-	"let col_pos = virtcol('.')
-	"let file = file_name . "." . ext_name
-	
-	" get the most inner node at current cursor position using libclang
 	"let node_pos = libclang#location#extent(file, line_pos, col_pos)
-	
-	" if current cursor position is not a valid node
-	"if empty(node_pos) == 1
-	"	echom Error: Current position doesn't have a node."
-	"	return
-	"endif
-
-	"let temp_pos = VisualSelect("current", node_pos)
-	" echom g:cursor_start
-	" echom g:cursor_end
-
         " get  file name
         let file_name = expand('%:t:r')
         let ext_name = expand('%:e')
         let file = file_name . "." . ext_name
 
         " get entire AST
-        let ast = libclang#AST#non_system_headers#all(file)
+        "let ast = libclang#AST#current_file#all(file)
+	let a = ReadFlags()
+        execute("let ast = libclang#AST#current_file#all(\"" . file . "\"" . g:compile_args . ")")
 
 	"let line = getpos(".")
 	let [line_start, column_start] = getpos("'<")[1:2]
         let [line_end, column_end] = getpos("'>")[1:2]
-	echom line_start
-	echom line_end
-	echom column_start
-	echom column_end
-
-	"echom line
+	
 	let temp_pos = VisualSelectCurrent(ast, line_start, column_start, line_end, column_end)
 	
 	return
@@ -162,8 +175,10 @@ if a:command =~ "select parent node"
 	let file = file_name . "." . ext_name
 
 	" get entire AST
-	let ast = libclang#AST#non_system_headers#all(file)
-	
+	"let ast = libclang#AST#current_file#all(file)
+	let a = ReadFlags()
+        execute("let ast = libclang#AST#current_file#all(\"" . file . "\"" . g:compile_args . ")")
+
 	let temp_pos = VisualSelect("parent", ast)
 	return
 endif
@@ -182,7 +197,9 @@ if a:command =~ "select child node"
 	let file = file_name . "." . ext_name
 
 	" get entire AST
-	let ast = libclang#AST#non_system_headers#all(file)
+	"let ast = libclang#AST#current_file#all(file)
+	let a = ReadFlags()
+        execute("let ast = libclang#AST#current_file#all(\"" . file . "\"" . g:compile_args . ")")
 
 	let temp_pos = VisualSelect("child", ast)
 	return
@@ -201,7 +218,9 @@ if a:command =~ "select next sibling node"
 	let file = file_name . "." . ext_name
 
 	" get entire AST
-	let ast = libclang#AST#non_system_headers#all(file)
+	"let ast = libclang#AST#current_file#all(file)
+	let a = ReadFlags()
+        execute("let ast = libclang#AST#current_file#all(\"" . file . "\"" . g:compile_args . ")")
 
 	let temp_pos = VisualSelect("next sibling", ast)
 	return
@@ -220,7 +239,9 @@ if a:command =~ "select previous sibling node"
 	let file = file_name . "." . ext_name
 
 	" get entire AST
-	let ast = libclang#AST#non_system_headers#all(file)
+	"let ast = libclang#AST#current_file#all(file)
+	let a = ReadFlags()
+        execute("let ast = libclang#AST#current_file#all(\"" . file . "\"" . g:compile_args . ")")
 
 	let temp_pos = VisualSelect("previous sibling", ast)
 	return
@@ -238,8 +259,11 @@ if a:command =~ "search node"
         let file = file_name . "." . ext_name
 
         " get entire AST
-        let ast = libclang#AST#non_system_headers#all(file)
+        " let ast = libclang#AST#current_file#all(file)
+	let a = ReadFlags()
+	execute("let ast = libclang#AST#current_file#all(\"" . file . "\"" . g:compile_args . ")")
 
+        "echo ast
 	let [line, column] = getpos(".")[1:2]
 
         let temp_pos = VisualSearch(a:command, ast, line, column) 

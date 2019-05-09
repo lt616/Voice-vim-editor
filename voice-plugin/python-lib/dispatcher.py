@@ -139,7 +139,6 @@ def node_search(command, node_pos, line, col):
 		keywords = {}
 		for i in range(2, len(commands)):
 			keywords[commands[i]] = {}
-		print(keywords)
 
 		return node.inline_node_search(select_nodes(node_pos["root"]), line, col, keywords)
 
